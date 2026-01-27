@@ -83,8 +83,6 @@ def test_risk(
     with torch.no_grad():
         progress_bar = tqdm(test_loader, desc="Testing", disable=not accelerator.is_main_process)
         for batch in progress_bar:
-            # Data is already on the correct device
-
             # Risk model forward
             outputs = model_risk(batch["current_image_cc"], batch["previous_image_cc"], batch["current_image_mlo"],
                                  batch["previous_image_mlo"],
@@ -156,7 +154,6 @@ def test_risk(
                 for year, (mean_auc, ci) in auc_summary.items()
             }
 
-            # NJD metrics
             results = {
                 "C-index": {"Mean": mean_c_index, "95% CI": c_index_ci},
                 "Yearly AUCs": auc_formatted,

@@ -26,7 +26,7 @@ def train_val(args, train_loader, valid_loader, path_loggger, path_model, accele
     model_reg.eval()
 
 
-    model_risk = LongitudinalMultiViewRiskModel( mammo_reg_net=model_reg, max_followup=5, finetune=args.finetune,  finetune_first=args.finetune_first, finetune_first_and_last=args.finetune_first_and_last, finetune_all = args.finetune_all)
+    model_risk = LongitudinalMultiViewRiskModel( mammo_reg_net=model_reg, max_followup=5, finetune_all = args.finetune_all)
     get_model_size(model_risk, accelerator)
 
 
@@ -66,7 +66,7 @@ def train_val(args, train_loader, valid_loader, path_loggger, path_model, accele
     # --- WandB Initialization ---
     if accelerator.is_main_process:
         wandb.init(project="LMV_Risk_Prediction", config={
-            "Optimizer": "Adam", "architecture": "TemporalMultiViewRiskPrediction", "dataset": args.dataset,
+            "Optimizer": "AdamW", "architecture": "TemporalMultiViewRiskPrediction", "dataset": args.dataset,
             "epochs": args.num_epochs, "learning_rate": args.learning_rate, "Weight_decay": args.weight_decay,
         })
         wandb.define_metric("epoch", hidden=True)

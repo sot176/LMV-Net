@@ -15,8 +15,7 @@ warnings.filterwarnings("ignore", category=SourceChangeWarning)
 
 from accelerate import Accelerator
 
-from dataloaders import BreastCancerRiskDataset
-from dataloaders import BreastCancerRiskDatasetCSAWCC
+from dataloaders import BreastCancerRiskDataset, BreastCancerRiskDatasetCSAWCC
 
 from train import train_val
 
@@ -57,9 +56,7 @@ def parse_arguments():
     parser.add_argument("--augmentations", type=str, required=True)
     parser.add_argument("--use_scheduler", type=str, required=True)
     parser.add_argument("--optimizer", type=str)
-    parser.add_argument("--use_only_one_view", type=str)
     parser.add_argument("--warmup_steps", default=5000, type=int)
-    parser.add_argument("--finetune", action="store_true", help="Whether to finetune the last ResNet block")
     parser.add_argument("--finetune_all", action="store_true", help="Whether to finetune the whole encoder")
 
 
@@ -70,7 +67,6 @@ def parse_arguments():
     parser.add_argument("--schuffle", default=True, type=bool)
     parser.add_argument("--pin_memory", default=True, type=bool)
     parser.add_argument("--dataset", type=str)
-    parser.add_argument("--use_residual", type=str)
 
     parser.add_argument("--lr_decay", default=0.5, type=float)
     parser.add_argument("--learning_rate", default=1e-4, type=float)

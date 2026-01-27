@@ -14,7 +14,7 @@ class LongitudinalFeatureProcessor(nn.Module):
     current and prior mammogram views.
     """
 
-    def __init__(self, mammo_reg_net: nn.Module,  finetune: bool = False, finetune_first: bool = False, finetune_first_and_last: bool = False, finetune_all: bool = False):
+    def __init__(self, mammo_reg_net: nn.Module,  finetune_all: bool = False):
         super().__init__()
 
         sys.path.append('path/to/onconet')
@@ -114,10 +114,10 @@ class LongitudinalFeatureProcessor(nn.Module):
 
 class LongitudinalMultiViewRiskModel(nn.Module):
     def __init__(self, mammo_reg_net: nn.Module, max_followup: int = 5,
-                 num_attn_blocks: int = 1, feature_dim: int = 1536,  finetune: bool = False, finetune_first: bool = False, finetune_first_and_last: bool = False, finetune_all: bool = False):
+                 num_attn_blocks: int = 1, feature_dim: int = 1536,  finetune_all: bool = False):
         super().__init__()
 
-        self.longitudinal_feat_processor = LongitudinalFeatureProcessor(mammo_reg_net=mammo_reg_net, finetune=finetune, finetune_first=finetune_first, finetune_first_and_last = finetune_first_and_last, finetune_all=finetune_all)
+        self.longitudinal_feat_processor = LongitudinalFeatureProcessor(mammo_reg_net=mammo_reg_net, finetune_all=finetune_all)
 
         # Cross-attention blocks
         self.cross_attn_blocks = nn.ModuleList([
