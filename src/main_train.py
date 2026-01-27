@@ -3,28 +3,24 @@ import os
 import random
 import torch
 from torch.utils.data import DataLoader
-
-from dataloaders.dataset_embed_multiple_prior_img import  BreastCancerRiskDataset_multiple_Prior_EMBED
-from dataloaders.dataset_embed import BreastCancerRiskDataset
-from dataloaders.dataset_csaw import BreastCancerRiskDatasetCSAWCC
-from dataloaders.dataset_embed_CC_or_MLO import BreastCancerRiskDataset_One_View
-from dataloaders.dataset_csaw_CC_or_MLO import BreastCancerRiskDatasetCSAWCC_oneView
-from train.train_risk_prediction import train_val
 import logging
 import time
 import kornia.augmentation as K_A
 from kornia.constants import Resample
 from datetime import datetime
 import kornia.augmentation.container as K_C
-
-# import statements for implementing ddp
-from accelerate import Accelerator
-
-# to get rid of warning on the slurm output.
 import warnings
 from torch.serialization import SourceChangeWarning
 warnings.filterwarnings("ignore", category=SourceChangeWarning)
 
+from accelerate import Accelerator
+
+from dataloaders import BreastCancerRiskDataset
+from dataloaders import BreastCancerRiskDatasetCSAWCC
+
+from train import train_val
+
+# to get rid of warning on the slurm output.
 
 # function to log the details
 def setup_logging(path_logger, is_main_process):
@@ -64,14 +60,8 @@ def parse_arguments():
     parser.add_argument("--use_only_one_view", type=str)
     parser.add_argument("--warmup_steps", default=5000, type=int)
     parser.add_argument("--finetune", action="store_true", help="Whether to finetune the last ResNet block")
-    parser.add_argument("--finetune_first", action="store_true", help="Whether to finetune the first ResNet block")
-    parser.add_argument("--finetune_first_and_last", action="store_true", help="Whether to finetune the first and last ResNet block")
     parser.add_argument("--finetune_all", action="store_true", help="Whether to finetune the whole encoder")
-    parser.add_argument("--use_only_multiview_pred", action="store_true", help="use only multi view features for prediction")
-    parser.add_argument("--use_no_attention", action="store_true", help="ablation study: remove Attention")
-    parser.add_argument("--use_no_prior_img", action="store_true", help="ablation study: No prior images")
-    parser.add_argument("--use_multiple_prior_img", action="store_true", help="Using multiple prior images")
-    parser.add_argument("--heads", default=4, type=int)
+
 
     parser.add_argument("--patience_lr_scheduler", default=5, type=int)
     parser.add_argument("--patience", default=15, type=int)
@@ -87,11 +77,7 @@ def parse_arguments():
     parser.add_argument("--num_epochs", default=100, type=int)
     parser.add_argument("--seed", default=2023, type=int)
     parser.add_argument("--weight_decay", default=1e-5, type=float)
-    parser.add_argument("--perceiver_depth", default=1, type=int)
-    parser.add_argument("--latent_dim", default=5112, type=int)
-    parser.add_argument("--latent_dim_head", default=1, type=int)
-    parser.add_argument("--dropout_perceiver", default=0.0, type=float)
-    parser.add_argument("--num_latents", default=16, type=int)
+
 
     args = parser.parse_args()
 
@@ -149,111 +135,44 @@ def main():
             K_A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.0, p=0.5),
             K_A.RandomGamma(gamma=(0.8, 1.2), gain=(0.9, 1.05), p=0.5),
         )
-        if args.dataset == "CSAW":
-            train_transform = K_C.AugmentationSequential(
-                K_A.RandomCrop(size=(1946, 1581), p=0.2),
-                K_A.Resize((2048, 1664), resample=Resample.NEAREST.name),
-                K_A.RandomAffine(translate=(0.0, 0.1), scale=(1.0, 1.1), degrees=0, shear=0, p=0.5),
-                K_A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.0, p=0.5),
-            )
-
         if accelerator.is_main_process:
             print("Train augmentations :", train_transform)
-        transforms_img_val = None
     else:
-        transforms_img_train = None
-        transforms_img_val = None
+        train_transform = None
 
-    if args.use_only_one_view == "True":
-        print("use either CC or MLO")
-        if args.dataset == "CSAW":
-            print("Use CSAW-CC dataset")
-            train_dataset = BreastCancerRiskDatasetCSAWCC_oneView(
-                args.csv_file, args.data_root, "train", transforms=train_transform
-            )
-            validation_dataset = BreastCancerRiskDatasetCSAWCC_oneView(
-                args.csv_file, args.data_root, "val", transforms=None
-            )
-        else:
-            print("Use EMBED dataset")
-            train_dataset = BreastCancerRiskDataset_One_View(
-                args.csv_file, args.data_root, "train", transforms=train_transform
-                )
-            validation_dataset = BreastCancerRiskDataset_One_View(
-                args.csv_file, args.data_root, "val", transforms=None
-            )
-    elif args.use_multiple_prior_img:
-        if args.use_residual == "True":
-            args.use_residual = True
-        else:
-            args.use_residual = False
-        print("use multiple prior images")
-        if args.dataset == "CSAW":
-            print("Use CSAW-CC dataset")
-            train_dataset = BreastCancerRiskDatasetCSAWCC(
-                args.csv_file, args.data_root, "train", transforms=train_transform
-            )
-            validation_dataset = BreastCancerRiskDatasetCSAWCC(
-                args.csv_file, args.data_root, "val", transforms=None
-            )
-        else:
-            print("Use EMBED dataset")
-            train_dataset = BreastCancerRiskDataset_multiple_Prior_EMBED(
-                args.csv_file, args.data_root, "train", transforms=train_transform
-            )
-            validation_dataset = BreastCancerRiskDataset_multiple_Prior_EMBED(
-                args.csv_file, args.data_root, "val", transforms=None
-            )
-    else:
-        if args.dataset == "CSAW":
-            print("Use CSAW-CC dataset")
-            train_dataset = BreastCancerRiskDatasetCSAWCC(
-                args.csv_file, args.data_root, "train", transforms=train_transform
-            )
-            validation_dataset = BreastCancerRiskDatasetCSAWCC(
-                args.csv_file, args.data_root, "val", transforms=None
-            )
-        else:
-            print("Use EMBED dataset")
-            train_dataset = BreastCancerRiskDataset(
-                args.csv_file, args.data_root, "train", transforms=train_transform
-            )
-            validation_dataset = BreastCancerRiskDataset(
-                args.csv_file, args.data_root, "val", transforms=None
-            )
-    if args.use_multiple_prior_img:
-        # Dataloader setup - Accelerator will handle the DistributedSampler
-        train_loader = DataLoader(
-            train_dataset,
-            batch_size=args.batch_size,
-            num_workers=args.num_workers,
-            shuffle=args.schuffle,
-            pin_memory=args.pin_memory, collate_fn=custom_collate
+
+    if args.dataset == "CSAW":
+        print("Use CSAW-CC dataset")
+        train_dataset = BreastCancerRiskDatasetCSAWCC(
+            args.csv_file, args.data_root, "train", transforms=train_transform
         )
-
-        validation_loader = DataLoader(
-            validation_dataset,
-            batch_size=args.batch_size,
-            num_workers=args.num_workers,
-            shuffle=False,
-            pin_memory=args.pin_memory, collate_fn=custom_collate
+        validation_dataset = BreastCancerRiskDatasetCSAWCC(
+            args.csv_file, args.data_root, "val", transforms=None
         )
     else:
-        train_loader = DataLoader(
-            train_dataset,
-            batch_size=args.batch_size,
-            num_workers=args.num_workers,
-            shuffle=args.schuffle,
-            pin_memory=args.pin_memory
+        print("Use EMBED dataset")
+        train_dataset = BreastCancerRiskDataset(
+            args.csv_file, args.data_root, "train", transforms=train_transform
+        )
+        validation_dataset = BreastCancerRiskDataset(
+            args.csv_file, args.data_root, "val", transforms=None
         )
 
-        validation_loader = DataLoader(
-            validation_dataset,
-            batch_size=args.batch_size,
-            num_workers=args.num_workers,
-            shuffle=False,
-            pin_memory=args.pin_memory
-        )
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        shuffle=args.schuffle,
+        pin_memory=args.pin_memory
+    )
+
+    validation_loader = DataLoader(
+        validation_dataset,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        shuffle=False,
+        pin_memory=args.pin_memory
+    )
 
     # Setup the path to save the model and the logger.
     model_path = f"model_risk_prediction_training_id_{args.id_training}_last_epoch.pth"

@@ -1,6 +1,4 @@
-import numpy as np
 from lifelines import KaplanMeierFitter
-import torch
 from lifelines.utils.btree import _BTree
 import numpy as np
 

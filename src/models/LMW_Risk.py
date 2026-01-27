@@ -3,9 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sys
 
-from asymmetry_model.mirai_localized_dif_head import extract_mirai_backbone
-from models.model_utils import SpatialTransformerBlock, ContinuousPosEncoding, CumulativeProbabilityLayer, CrossAttentionBlock
-from torch.nn.functional import dropout
+from mirai_localized_dif_head import extract_mirai_backbone
+from model_utils import SpatialTransformerBlock, ContinuousPosEncoding, CumulativeProbabilityLayer, CrossAttentionBlock
 
 
 class LongitudinalFeatureProcessor(nn.Module):
@@ -18,10 +17,9 @@ class LongitudinalFeatureProcessor(nn.Module):
     def __init__(self, mammo_reg_net: nn.Module,  finetune: bool = False, finetune_first: bool = False, finetune_first_and_last: bool = False, finetune_all: bool = False):
         super().__init__()
 
-        sys.path.append(
-            '/pfs/lustrep4/scratch/project_465002309/thrunsol/Risk_prediction_lumi/src/AsymMirai_master/onconet')
+        sys.path.append('path/to/onconet')
         self.encoder = extract_mirai_backbone(
-            '/scratch/project_465002309/thrunsol/mirai_pretrained_backbone/mgh_mammo_MIRAI_Base_May20_2019.p'
+            '/path/to/mirai_pretrained_backbone/mgh_mammo_MIRAI_Base_May20_2019.p'
         )
         self.mammo_reg_net = mammo_reg_net
 
@@ -43,29 +41,6 @@ class LongitudinalFeatureProcessor(nn.Module):
                 param.requires_grad = True
             self.encoder.train()
 
-        elif finetune_first_and_last:
-            print("Finetuning first and last layers of the encoder")
-            # First layers (Downsampler + first residual block)
-            for idx in [0, 1, 2]:
-                for param in self.encoder[idx].parameters():
-                    param.requires_grad = True
-            # Last layers (final residual block)
-            for idx in [7, 8]:
-                for param in self.encoder[idx].parameters():
-                    param.requires_grad = True
-            self.encoder.train()
-        elif finetune:
-            print("Finetuning layer4 only of the Mirai encoder")
-            for idx in [7,8]:
-                for param in self.encoder[idx].parameters():
-                    param.requires_grad = True
-            self.encoder.train()
-        elif finetune_first:
-            print("Finetuning first block (Downsampler + layer1,2) of the encoder")
-            for idx in [0, 1, 2]:  # downsampler and first residual block
-                for param in self.encoder[idx].parameters():
-                    param.requires_grad = True
-            self.encoder.train()
         else:
             for param in self.encoder.parameters():
                 param.requires_grad = False

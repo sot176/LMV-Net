@@ -4,23 +4,22 @@ from accelerate import Accelerator
 import json
 import numpy as np
 import os
-# Import your project-specific modules
-from utils.utils import (
+
+from utils import (
     create_logger,
     save_model_results_to_file,
     print_results,
     compute_auc_x_year_auc,
+    bootstrap_c_index,
+    bootstrap_auc_by_density,
+    bootstrap_c_index_by_density,
+    bootstrap_auc,
+    bootstrap_c_index_by_cancer_type,
+    bootstrap_auc_by_cancer_type,
+    get_censoring_dist,
 )
 
-from utils.c_index import get_censoring_dist
-from models import  mammoregnet
-from models.LMW_Risk import LongitudinalMultiViewRiskModel
-
-from utils.utils import bootstrap_c_index, bootstrap_auc_by_density, bootstrap_c_index_by_density, bootstrap_auc, bootstrap_c_index_by_cancer_type, bootstrap_auc_by_cancer_type
-
-from models.LMW_Risk_Ablation import  LongitudinalMultiViewRiskModel_NoAttention, LongitudinalMultiViewRiskModel_Only_multiview_feat, LongitudinalMultiViewRiskModel_No_prior_img
-
-from models.LMW_Risk_multiple_priors import  LongitudinalMultiViewRiskModel_multiple_prior
+from models import MammoRegNet, LongitudinalMultiViewRiskModel
 
 
 def to_json_safe(obj):
@@ -54,47 +53,17 @@ def test_risk(
 
     # 2. Model Loading (always on CPU first)
     # Load registration model
-    path_saved_reg_model = (
-        "/scratch/project_465002309/thrunsol/Trained_image_registration_models/csawcc/best_model_registration_id-1.pth"
-        if args.dataset == "CSAW"
-        else "/scratch/project_465002309/thrunsol/Trained_image_registration_models/embed/best_model_registration_id-1.pth"
-    )
+    path_saved_reg_model = ("PATH/TO/MammoRegNet")
+
     if accelerator.is_main_process:
         print("Path reg model:", path_saved_reg_model)
 
     checkpoint_reg = torch.load(path_saved_reg_model, map_location="cpu", weights_only=True)
-    model_reg = mammoregnet.MammoRegNet()
+    model_reg = MammoRegNet()
     model_reg.load_state_dict({k.replace("module.", ""): v for k, v in checkpoint_reg.items()})
 
-    # Load risk model based on arguments
-
-    if args.use_no_attention:
-        print("Ablation study: no attention blocks")
-        model_risk = LongitudinalMultiViewRiskModel_NoAttention(mammo_reg_net=model_reg, max_followup=5)
-    elif args.use_only_multiview_pred:
-        print("use only multi view prediction")
-        model_risk = LongitudinalMultiViewRiskModel_Only_multiview_feat(mammo_reg_net=model_reg, max_followup=5 )
-    elif args.use_no_prior_img:
-        print("Ablation study: no prior images")
-        model_risk = LongitudinalMultiViewRiskModel_No_prior_img(max_followup=5)
-    elif args.use_multiple_prior_img:
-        print("Using multiple prior images using perceiver mechanism")
-        model_risk = LongitudinalMultiViewRiskModel_multiple_prior(mammo_reg_net=model_reg,
-                                                                   max_followup=5, dropout=args.dropout_perceiver,
-                                                                   latent_dim_head=args.latent_dim_head,
-                                                                   latent_dim=args.latent_dim,
-                                                                   depth=args.perceiver_depth,
-                                                                   num_latents=args.num_latents)
-        ckpt = torch.load(path_model, map_location="cpu")
-
-        state_dict = ckpt["model"]
-        state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
-
-        model_risk.load_state_dict(state_dict)
-
-    else:
-        model_risk = LongitudinalMultiViewRiskModel(mammo_reg_net=model_reg, max_followup=5)
-
+    # Load risk model
+    model_risk = LongitudinalMultiViewRiskModel(mammo_reg_net=model_reg, max_followup=5)
     checkpoint_risk = torch.load(path_model, map_location="cpu")
     model_risk.load_state_dict({k.replace("module.", ""): v for k, v in checkpoint_risk.items()})
     model_risk.eval()
@@ -207,5 +176,4 @@ def test_risk(
             with open("results.json", "w") as f:
                 json.dump(results, f, indent=2, default=str)
 
-        # Non-main processes can just return None
         return None

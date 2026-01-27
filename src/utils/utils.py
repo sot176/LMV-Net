@@ -6,11 +6,9 @@ import torch.nn.functional as F
 from sklearn import metrics
 from sklearn.utils import resample
 import numpy as np
-from sklearn.metrics import roc_auc_score
-from scipy import stats
 import torch
 
-from utils.c_index import concordance_index_ipcw
+from c_index import concordance_index_ipcw
 
 
 
@@ -33,15 +31,6 @@ def get_risk_loss_BCE( pred, y_true, y_mask):
     masked_loss = F.binary_cross_entropy_with_logits(
         pred, y_true.float(), weight=y_mask.float(),  reduction='sum'
     ) / torch.sum(y_mask.float())
-
-    #pos_weight = (y_mask.sum() - y_true.sum()) / (y_true.sum() + 1e-6)
-
-    #masked_loss = F.binary_cross_entropy_with_logits(
-    #    pred, y_true.float(),
-     #   weight=y_mask.float(),  # mask to ignore invalid points
-      #  pos_weight=torch.tensor(pos_weight).to(pred.device),
-      #  reduction='sum'
-    #) / torch.sum(y_mask.float())
 
     return masked_loss
 
@@ -640,6 +629,7 @@ def bootstrap_auc_by_density(
                 auc_summary_by_density[density][year] = (None, (None, None))
 
     return auc_summary_by_density
+
 
 def bootstrap_c_index_by_density(
     event_times,

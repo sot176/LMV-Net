@@ -1,111 +1,14 @@
 import os
 import torch
 import wandb
-from tqdm import tqdm
 from accelerate import Accelerator
 
-from models.mammoregnet import MammoRegNet
-from utils.utils import create_logger
-from .train_utils import train_one_epoch, evaluate
-from models.LMW_Risk import LongitudinalMultiViewRiskModel
-from models.LMW_Risk_Ablation import LongitudinalMultiViewRiskModel_NoAttention, LongitudinalMultiViewRiskModel_Only_multiview_feat, LongitudinalMultiViewRiskModel_No_prior_img
-
-from models.LMW_Risk_multiple_priors import LongitudinalMultiViewRiskModel_multiple_prior
+from models import MammoRegNet, LongitudinalMultiViewRiskModel
+from utils import create_logger, bootstrap_auc, bootstrap_c_index
+from train_utils import train_one_epoch, evaluate, get_model_size, get_param_groups, linear_warmup, load_checkpoint, \
+    save_checkpoint
 
 
-def get_model_size(model, accelerator):
-    """Calculates and logs the model size, handling unwrapping from Accelerator."""
-    unwrapped_model = accelerator.unwrap_model(model)
-    param_size = sum(p.numel() * p.element_size() for p in unwrapped_model.parameters())
-    buffer_size = sum(b.numel() * b.element_size() for b in unwrapped_model.buffers())
-    total_size_mb = (param_size + buffer_size) / (1024 ** 2)
-
-    if accelerator.is_main_process:
-        print(f"Model size: {total_size_mb:.2f} MB (Parameters: {param_size / 1e6:.1f}M elements)")
-    return total_size_mb
-
-def linear_warmup(step, warmup_steps):
-    """
-    Linear warm-up function.
-    Gradually increases the learning rate from 0 to base_lr over warmup_steps.
-    """
-    if warmup_steps == 0:
-        return 1.0  # No warm-up, directly use the base learning rate
-    if step < warmup_steps:
-        return step / warmup_steps
-    return 1.0
-
-
-def get_param_groups(model, base_lr, finetune_lr_scale=0.1):
-    encoder_params = []
-    new_module_params = []
-
-    for name, param in model.named_parameters():
-        if not param.requires_grad:
-            continue  # skip frozen params
-
-        if "encoder" in name:
-            # Any unfrozen encoder params go here
-            encoder_params.append(param)
-        else:
-            # Everything else is a "new module"
-            new_module_params.append(param)
-
-    param_groups = []
-    if new_module_params:
-        param_groups.append({"params": new_module_params, "lr": base_lr})
-    if encoder_params:
-        param_groups.append({"params": encoder_params, "lr": base_lr * finetune_lr_scale})
-
-    return param_groups
-
-def save_checkpoint(
-    accelerator,
-    model,
-    optimizer,
-    scheduler,
-    warmup_scheduler,
-    epoch,
-    global_step,
-    best_c_index,
-    path
-):
-    accelerator.save({
-        "epoch": epoch,
-        "global_step": global_step,
-        "best_c_index": best_c_index,
-        "model": accelerator.unwrap_model(model).state_dict(),
-        "optimizer": optimizer.state_dict(),
-        "scheduler": scheduler.state_dict() if scheduler else None,
-        "warmup_scheduler": warmup_scheduler.state_dict(),
-    }, path)
-
-def load_checkpoint(
-    checkpoint_path,
-    model,
-    optimizer,
-    scheduler,
-    warmup_scheduler,
-    accelerator
-):
-    ckpt = torch.load(checkpoint_path, map_location="cpu")
-
-    accelerator.unwrap_model(model).load_state_dict(ckpt["model"])
-    optimizer.load_state_dict(ckpt["optimizer"])
-
-    if scheduler and ckpt["scheduler"] is not None:
-        scheduler.load_state_dict(ckpt["scheduler"])
-
-    warmup_scheduler.load_state_dict(ckpt["warmup_scheduler"])
-
-    return (
-        ckpt["epoch"] + 1,
-        ckpt["global_step"],
-        ckpt["best_c_index"],
-    )
-
-
-# --- Main Training Function ---
 def train_val(args, train_loader, valid_loader, path_loggger, path_model, accelerator: Accelerator):
     # Initialize logger
     logger = create_logger(path_loggger) if accelerator.is_main_process else None
@@ -113,10 +16,7 @@ def train_val(args, train_loader, valid_loader, path_loggger, path_model, accele
         logger.info(f"Number Training Epochs: {args.num_epochs}")
 
     # --- Model and Optimizer Setup ---
-    if args.dataset == "CSAW":
-        path_saved_reg_model = "/scratch/project_465002309/thrunsol/Trained_image_registration_models/csawcc/best_model_registration_id-1.pth"
-    else:
-        path_saved_reg_model = "/scratch/project_465002309/thrunsol/Trained_image_registration_models/embed/best_model_registration_id-1.pth"
+    path_saved_reg_model = ("PATH/TO/MammoRegNet")
     if accelerator.is_main_process: print("Path reg model:", path_saved_reg_model)
 
     checkpoint = torch.load(path_saved_reg_model, map_location="cpu", weights_only=True)
@@ -125,24 +25,11 @@ def train_val(args, train_loader, valid_loader, path_loggger, path_model, accele
     model_reg.load_state_dict(new_checkpoint)
     model_reg.eval()
 
-    if args.use_no_attention:
-        print("Ablation study: no attention blocks")
-        model_risk = LongitudinalMultiViewRiskModel_NoAttention( mammo_reg_net=model_reg, max_followup=5, finetune=args.finetune,  finetune_first=args.finetune_first, finetune_first_and_last=args.finetune_first_and_last, finetune_all = args.finetune_all)
-    elif args.use_only_multiview_pred:
-        print("use only multi view prediction")
-        model_risk = LongitudinalMultiViewRiskModel_Only_multiview_feat( mammo_reg_net=model_reg, max_followup=5, finetune=args.finetune,  finetune_first=args.finetune_first, finetune_first_and_last=args.finetune_first_and_last, finetune_all = args.finetune_all)
-    elif args.use_no_prior_img:
-        print("Ablation study: no prior images")
-        model_risk = LongitudinalMultiViewRiskModel_No_prior_img(max_followup=5, finetune=args.finetune,  finetune_first=args.finetune_first, finetune_first_and_last=args.finetune_first_and_last, finetune_all = args.finetune_all)
-    elif args.use_multiple_prior_img:
-        print("Using multiple prior images using perceiver mechanism")
-        model_risk = LongitudinalMultiViewRiskModel_multiple_prior(mammo_reg_net=model_reg, finetune=args.finetune_all, max_followup=5, dropout=args.dropout_perceiver,latent_dim_head=args.latent_dim_head, latent_dim=args.latent_dim, depth=args.perceiver_depth,num_latents=args.num_latents, use_residual=args.use_residual)
-    else:
-        model_risk = LongitudinalMultiViewRiskModel( mammo_reg_net=model_reg, max_followup=5, finetune=args.finetune,  finetune_first=args.finetune_first, finetune_first_and_last=args.finetune_first_and_last, finetune_all = args.finetune_all)
+
+    model_risk = LongitudinalMultiViewRiskModel( mammo_reg_net=model_reg, max_followup=5, finetune=args.finetune,  finetune_first=args.finetune_first, finetune_first_and_last=args.finetune_first_and_last, finetune_all = args.finetune_all)
     get_model_size(model_risk, accelerator)
 
 
-    # Usage:
     param_groups = get_param_groups(model_risk, base_lr=args.learning_rate, finetune_lr_scale=0.1)
 
     optimizer = torch.optim.AdamW(param_groups, weight_decay=args.weight_decay)

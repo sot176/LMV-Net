@@ -1,8 +1,7 @@
 import torch
-import numpy as np
 from accelerate import Accelerator
-from utils.c_index import concordance_index_ipcw, get_censoring_dist
-from utils.utils import get_risk_loss_BCE, compute_auc_x_year_auc
+from c_index import concordance_index_ipcw, get_censoring_dist
+from utils import get_risk_loss_BCE, compute_auc_x_year_auc
 
 
 def train_one_epoch(args, model_risk, train_loader, optimizer, accelerator,  warmup_scheduler, global_step, warmup_steps):
@@ -114,3 +113,99 @@ def evaluate(args, model_risk, valid_loader, accelerator):
         auc_results = compute_auc_x_year_auc(predictions_val, event_times_val, event_observed_val)
 
     return avg_risk_loss, c_index, auc_results
+
+
+
+def get_model_size(model, accelerator):
+    """Calculates and logs the model size, handling unwrapping from Accelerator."""
+    unwrapped_model = accelerator.unwrap_model(model)
+    param_size = sum(p.numel() * p.element_size() for p in unwrapped_model.parameters())
+    buffer_size = sum(b.numel() * b.element_size() for b in unwrapped_model.buffers())
+    total_size_mb = (param_size + buffer_size) / (1024 ** 2)
+
+    if accelerator.is_main_process:
+        print(f"Model size: {total_size_mb:.2f} MB (Parameters: {param_size / 1e6:.1f}M elements)")
+    return total_size_mb
+
+def linear_warmup(step, warmup_steps):
+    """
+    Linear warm-up function.
+    Gradually increases the learning rate from 0 to base_lr over warmup_steps.
+    """
+    if warmup_steps == 0:
+        return 1.0  # No warm-up, directly use the base learning rate
+    if step < warmup_steps:
+        return step / warmup_steps
+    return 1.0
+
+
+def get_param_groups(model, base_lr, finetune_lr_scale=0.1):
+    encoder_params = []
+    new_module_params = []
+
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue  # skip frozen params
+
+        if "encoder" in name:
+            # Any unfrozen encoder params go here
+            encoder_params.append(param)
+        else:
+            # Everything else is a "new module"
+            new_module_params.append(param)
+
+    param_groups = []
+    if new_module_params:
+        param_groups.append({"params": new_module_params, "lr": base_lr})
+    if encoder_params:
+        param_groups.append({"params": encoder_params, "lr": base_lr * finetune_lr_scale})
+
+    return param_groups
+
+
+def save_checkpoint(
+    accelerator,
+    model,
+    optimizer,
+    scheduler,
+    warmup_scheduler,
+    epoch,
+    global_step,
+    best_c_index,
+    path
+):
+    accelerator.save({
+        "epoch": epoch,
+        "global_step": global_step,
+        "best_c_index": best_c_index,
+        "model": accelerator.unwrap_model(model).state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "scheduler": scheduler.state_dict() if scheduler else None,
+        "warmup_scheduler": warmup_scheduler.state_dict(),
+    }, path)
+
+
+def load_checkpoint(
+    checkpoint_path,
+    model,
+    optimizer,
+    scheduler,
+    warmup_scheduler,
+    accelerator
+):
+    ckpt = torch.load(checkpoint_path, map_location="cpu")
+
+    accelerator.unwrap_model(model).load_state_dict(ckpt["model"])
+    optimizer.load_state_dict(ckpt["optimizer"])
+
+    if scheduler and ckpt["scheduler"] is not None:
+        scheduler.load_state_dict(ckpt["scheduler"])
+
+    warmup_scheduler.load_state_dict(ckpt["warmup_scheduler"])
+
+    return (
+        ckpt["epoch"] + 1,
+        ckpt["global_step"],
+        ckpt["best_c_index"],
+    )
+
