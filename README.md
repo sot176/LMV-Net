@@ -21,6 +21,16 @@ This is the code for our MICCAI 2026 paper.
 
 ## Key findings of the paper
 
+❌ **Existing Gap:** Current breast cancer risk prediction models fail to effectively leverage complementary information from multiple mammographic views over time, a critical aspect of radiologists' clinical practice.
+
+🛠️ **Proposed Solution:** The LMV model integrates longitudinal and multi-view information to capture spatial-temporal risk factors for improved prediction accuracy.
+
+🚀 **Novelty:** Incorporates advanced architectural components such as temporal alignment, dual-stream attention, and multi-view learning to enhance performance.
+
+📊 **Robust Performance:** Achieves superior results across various breast density categories, with significant improvements in medium- and high-density groups.
+
+🏆 **Outperforms SOTA:** The LMV model consistently surpasses state-of-the-art methods (e.g., Mirai, VMRA-MaR, OA-BreaCR, ImgFeatAlign) in C-index and AUC metrics across all follow-up years.
+
 
 ## Datasets
 We used two large, publicly available mammography datasets :
@@ -45,14 +55,14 @@ To preprocess the EMBED dataset, use: `preprocessing/preprocess_img_embed.py`
 
 To preprocess the CSAW-CC dataset, use: `preprocessing/preprocess_img_csaw_cc.py`
 
-To split both datasets into training, validation, and test sets, use: `preprocessing/split_data.py`
+To split the datasets into training, validation, and test sets, use: `preprocessing/split_data.py`
 
-For the risk prediction, create a CSV file describing your dataset by running the notebooks in the `notebooks` folder
+Create a CSV file describing your dataset by running the notebooks in the `notebooks` folder
 
 ### 3) Training 
-Run the following script
+Run the following script `scripts/train.sh`
 
 ### 4) Inference
-Run the following script
+Run the following script `scripts/test.sh`
 
 ## Citation
