@@ -27,7 +27,7 @@ This is the code for our MICCAI 2026 paper.
 
 🚀 **Novelty:** Incorporates advanced architectural components such as temporal alignment, dual-stream attention, and multi-view learning to enhance performance.
 
-📊 **Robust Performance:** Achieves superior results across various breast density categories, with significant improvements in medium- and high-density groups.
+📊 **Robust Performance:** Achieves superior results across various breast density categories and  across different cancer categories, including both invasive and non-invasive types.
 
 🏆 **Outperforms SOTA:** The LMV model consistently surpasses state-of-the-art methods (e.g., Mirai, VMRA-MaR, OA-BreaCR, ImgFeatAlign) in C-index and AUC metrics across all follow-up years.
 
