@@ -1,6 +1,6 @@
 # Radiologist-Inspired Longitudinal Multi-View Breast Cancer Risk Prediction
 
-This is the code for our MICCAI 2026 paper.
+This is the code for our MICCAI 2026 submission.
 
 ## Table of Contents
 1. 📘 [Introduction](#introduction)  
