@@ -1,4 +1,4 @@
-# Radiologist-Inspired Longitudinal Multi-View Breast Cancer Risk Prediction
+# Longitudinal Multi-View Modeling for Breast Cancer Risk Prediction
 
 This is the code for our MICCAI 2026 submission.
 
@@ -16,7 +16,7 @@ This is the code for our MICCAI 2026 submission.
 ## Method
 
 <p align="center">
-  <img src="Figures/LMV_NEW.png" alt="Image 1" width="600"/>
+  <img src="Figures/Longitudinal_Multi_View_NEW.png" alt="Image 1" width="600"/>
 </p>
 
 ## Key findings of the paper
