@@ -16,7 +16,7 @@ This is the code for our MICCAI 2026 submission.
 ## Method
 
 <p align="center">
-  <img src="Figures/Longitudinal_Multi_View_NEW.png" alt="Image 1" width="600"/>
+  <img src="Figures/LMV.png" alt="Image 1" width="600"/>
 </p>
 
 ## Key findings of the paper
