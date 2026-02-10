@@ -23,7 +23,7 @@ This is the code for our MICCAI 2026 submission.
 
 ❌ **Existing Gap:** Current breast cancer risk prediction models fail to effectively leverage complementary information from multiple mammographic views over time, a critical aspect of radiologists' clinical practice.
 
-🛠️ **Proposed Solution:** The LMV model integrates longitudinal and multi-view information to capture spatial-temporal risk factors for improved prediction accuracy.
+🛠️ **Proposed Solution:** The LMV-Net integrates longitudinal and multi-view information to capture spatial-temporal risk factors for improved prediction accuracy.
 
 🚀 **Novelty:** Incorporates advanced architectural components such as explicit temporal alignment, dual-stream attention, and multi-view learning to enhance performance.
 
