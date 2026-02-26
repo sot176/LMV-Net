@@ -5,11 +5,11 @@ This is the code for our MICCAI 2026 submission.
 ## Table of Contents
 1. 📘 [Introduction](#introduction)  
 2. ⚙️ [Method](#method)  
-3. 🔍 [Key findings of the paper](#key-findings-of-the-paper)  
-4. 📚 [Datasets](#datasets)  
-5. ▶️ [Reproduction of the results](#reproduction-of-the-results)  
-6. 📄 [Citation](#citation)  
-
+3. 📚 [Datasets](#datasets)  
+4. 🔍 [Key findings of the paper](#key-findings-of-the-paper)  
+5. 📊 [Results](#results)
+6. ▶️ [Reproduction of the results](#reproduction-of-the-results)  
+7. 📄 [Citation](#citation)  
 
 ## Introduction
 Accurate breast cancer risk prediction is essential for personalized screening and early detection. Existing methods often fail to fully model the complementary information between CC and MLO views over time, limiting their ability to capture spatial–temporal interactions. LMV-Net addresses this gap by jointly analyzing complementary mammographic views across multiple screening time points. Evaluated on the EMBED and CSAW-CC datasets, LMV-Net outperforms state-of-the-art methods, demonstrating improved risk prediction across breast density and cancer subgroups. This approach highlights the potential for enhanced risk stratification, personalized screening, and efficient resource allocation.
@@ -19,6 +19,12 @@ Accurate breast cancer risk prediction is essential for personalized screening a
 <p align="center">
   <img src="Figures/LMV.png" alt="Image 1" width="600"/>
 </p>
+
+## Datasets
+We used two large, publicly available mammography datasets :
+- **Emory Breast Imaging Dataset (EMBED)**: https://aws.amazon.com/marketplace/pp/prodview-unw4li5rkivs2#overview}
+- **Cohort of Screen-Aged Women Case Control (CSAW-CC)**: https://snd.se/en/catalogue/dataset/2021-204-1
+
 
 ## Key findings of the paper
 
@@ -32,11 +38,11 @@ Accurate breast cancer risk prediction is essential for personalized screening a
 
 🏆 **Outperforms SOTA:** The LMV-Net consistently outperforms state-of-the-art methods (e.g., Mirai, VMRA-MaR, OA-BreaCR, ImgFeatAlign) in C-index and AUC metrics across all follow-up years.
 
+## Results
 
-## Datasets
-We used two large, publicly available mammography datasets :
-- **Emory Breast Imaging Dataset (EMBED)**: https://aws.amazon.com/marketplace/pp/prodview-unw4li5rkivs2#overview}
-- **Cohort of Screen-Aged Women Case Control (CSAW-CC)**: https://snd.se/en/catalogue/dataset/2021-204-1
+<p align="center">
+  <img src="Figures/image.png" alt="Image 1" width="600"/>
+</p>
 
 
 ##  Reproduction of the results
