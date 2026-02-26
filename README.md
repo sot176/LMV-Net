@@ -39,11 +39,26 @@ We used two large, publicly available mammography datasets :
 🏆 **Outperforms SOTA:** The LMV-Net consistently outperforms state-of-the-art methods (e.g., Mirai, VMRA-MaR, OA-BreaCR, ImgFeatAlign) in C-index and AUC metrics across all follow-up years.
 
 ## Results
+#### Comparison with state of the art methods: 
+- LMV-Net consistently outperforms all baselines in C-index and AUC across all follow-up years on both datasets. 
+- Fine-tuning the encoder yields further improvements, achieving statistically significant gains ($p<0.05$) over the second-best model.
 
 <p align="center">
   <img src="Figures/image.png" alt="Image 1" width="600"/>
 </p>
 
+#### Performance across density categories and cancer subgroups
+- LMV-Net consistently achieves the highest C-index across nearly all breast density groups, with the most substantial gains observed in medium- and high-density categories—demonstrating strong robustness in clinically challenging screening settings.
+
+- LMV-Net outperforms state-of-the-art methods across both cancer types, with the fine-tuned encoder delivering the best overall performance, while competing approaches exhibit lower accuracy and greater uncertainty.
+
+- On the EMBED dataset, LMV-Net achieves higher and more stable AUCs for invasive cancer prediction, highlighting its reliability compared to alternative methods.
+
+- By integrating multiview and longitudinal information in alignment with real-world clinical workflow, LMV-Net enables more robust and dependable breast cancer risk prediction, particularly for invasive disease.
+
+<p align="center">
+  <img src="Figures/image2.png" alt="Image 1" width="600"/>
+</p>
 
 ##  Reproduction of the results
 For reproducing the results follow the instructions below:
