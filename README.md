@@ -17,7 +17,7 @@ Accurate breast cancer risk prediction is essential for personalized screening a
 ## Method
 
 <p align="center">
-  <img src="Figures/LMV.png" alt="Image 1" width="600"/>
+  <img src="Figures/LMV.png" alt="Image 1" width="700"/>
 </p>
 
 ## Datasets
@@ -44,7 +44,7 @@ We used two large, publicly available mammography datasets :
 - Fine-tuning the encoder yields further improvements, achieving statistically significant gains ($p<0.05$) over the second-best model.
 
 <p align="center">
-  <img src="Figures/image.png" alt="Image 1" width="600"/>
+  <img src="Figures/image.png" alt="Image 1" width="700"/>
 </p>
 
 #### Performance across density categories and cancer subgroups
@@ -57,7 +57,7 @@ We used two large, publicly available mammography datasets :
 - By integrating multiview and longitudinal information in alignment with real-world clinical workflow, LMV-Net enables more robust and dependable breast cancer risk prediction, particularly for invasive disease.
 
 <p align="center">
-  <img src="Figures/image2.png" alt="Image 1" width="600"/>
+  <img src="Figures/image2.png" alt="Image 1" width="700"/>
 </p>
 
 ##  Reproduction of the results
