@@ -12,6 +12,7 @@ This is the code for our MICCAI 2026 submission.
 
 
 ## Introduction
+Accurate breast cancer risk prediction is essential for personalized screening and early detection. Existing methods often fail to fully model the complementary information between CC and MLO views over time, limiting their ability to capture spatial–temporal interactions. LMV-Net addresses this gap by jointly analyzing complementary mammographic views across multiple screening time points. Evaluated on the EMBED and CSAW-CC datasets, LMV-Net outperforms state-of-the-art methods, demonstrating improved risk prediction across breast density and cancer subgroups. This approach highlights the potential for enhanced risk stratification, personalized screening, and efficient resource allocation.
 
 ## Method
 
