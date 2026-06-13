@@ -1,6 +1,6 @@
 # Longitudinal Multi-View Modeling for Breast Cancer Risk Prediction
 
-This is the code for our MICCAI 2026 submission.
+This is the code for our MICCAI 2026 paper "Longitudinal Multi-View Modeling for Breast Cancer Risk Prediction".
 
 ## Table of Contents
 1. 📘 [Introduction](#introduction)  
