@@ -48,7 +48,7 @@ We used two large, publicly available mammography datasets :
 </p>
 
 #### Performance across density categories and cancer subgroups
-- LMV-Net consistently achieves the highest C-index across nearly all breast density groups, with the most substantial gains observed in medium- and high-density categories—demonstrating strong robustness in clinically challenging screening settings.
+- LMV-Net consistently achieves the highest C-index across nearly all breast density groups, with the most substantial gains observed in medium- and high-density categories, demonstrating strong robustness in clinically challenging screening settings.
 
 - LMV-Net outperforms state-of-the-art methods across both cancer types, with the fine-tuned encoder delivering the best overall performance, while competing approaches exhibit lower accuracy and greater uncertainty.
 
