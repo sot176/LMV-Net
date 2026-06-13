@@ -44,7 +44,7 @@ We used two large, publicly available mammography datasets :
 - Fine-tuning the encoder yields further improvements, achieving statistically significant gains ($p<0.05$) over the second-best model.
 
 <p align="center">
-  <img src="Figures/image.png" alt="Image 1" width="700"/>
+  <img src="Figures/image1.png" alt="Image 1" width="700"/>
 </p>
 
 #### Performance across density categories and cancer subgroups
