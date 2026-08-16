@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+title: "Longitudinal Multi-View Modeling for Breast Cancer Risk Prediction"
+message: "If you use this repository or the LMV-Net, please cite it using the metadata below."
+type: software
+date-released: 2026-06-12
+
+authors:
+  - family-names: "Thrun"
+    given-names: "Solveig"
+  - family-names: "Sun"
+    given-names: "Zijun"
+  - family-names: "Salahuddin"
+    given-names: "Suaiba A."
+  - family-names: "Wickstrøm"
+    given-names: "Kristoffer"
+  - family-names: "Wetzer"
+    given-names: "Elisabeth"
+  - family-names: "Hansen"
+    given-names: "Stine"
+  - family-names: "Jenssen"
+    given-names: "Robert"
+  - family-names: "Kampffmeyer"
+    given-names: "Michael"
+
+repository-code: "https://github.com/sot176/LMV-Net"
+license: "MIT"
+
+abstract: >
+  This repository contains the code for LMV-Net, a longitudinal
+  multi-view deep learning model for breast cancer risk prediction.
+  LMV-Net jointly models complementary CC and MLO mammographic views
+  across multiple screening time points using explicit temporal
+  alignment, dual-stream attention, and multi-view learning. The model
+  is evaluated on the EMBED and CSAW-CC datasets and demonstrates
+  improved breast cancer risk prediction across follow-up years,
+  breast density categories, and cancer subgroups. The repository
+  provides preprocessing, training, inference, and evaluation pipelines
+  to facilitate reproducible research and comparison with existing
+  breast cancer risk prediction methods.

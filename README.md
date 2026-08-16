@@ -2,6 +2,8 @@
 
 This is the code for our MICCAI 2026 paper "Longitudinal Multi-View Modeling for Breast Cancer Risk Prediction".
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/sot176/BCRBench/blob/main/LICENSE)
+
 ## Table of Contents
 1. 📘 [Introduction](#introduction)  
 2. ⚙️ [Method](#method)  
@@ -88,3 +90,12 @@ Run the following script `scripts/train.sh`
 Run the following script `scripts/test.sh`
 
 ## Citation
+```bibtex
+@inproceedings{lmv_net_2026,
+author = {Thrun, Solveig and Sun, Zijun and  Salahuddin, Suaiba A. and Wickstrøm, Kristoffer and Wetzer, Elisabeth and Hansen, Stine, and Jenssen, Robert and Kampffmeyer, Michael},
+title={Longitudinal Multi-View Modeling for Breast Cancer Risk Prediction},
+booktitle = {Medical Image Computing and Computer Assisted Intervention -- MICCAI 2026},
+year={2026}
+url={https://arxiv.org/abs/2607.11343}
+}
+```
