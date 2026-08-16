@@ -2,7 +2,7 @@
 
 This is the code for our MICCAI 2026 paper "Longitudinal Multi-View Modeling for Breast Cancer Risk Prediction".
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/sot176/BCRBench/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/sot176/LMV-Net/blob/main/LICENSE)
 
 ## Table of Contents
 1. 📘 [Introduction](#introduction)  
