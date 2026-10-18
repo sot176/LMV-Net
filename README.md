@@ -96,6 +96,6 @@ author = {Thrun, Solveig and Sun, Zijun and  Salahuddin, Suaiba A. and Wickstrø
 title={Longitudinal Multi-View Modeling for Breast Cancer Risk Prediction},
 booktitle = {Medical Image Computing and Computer Assisted Intervention -- MICCAI 2026},
 year={2026}
-url={https://arxiv.org/abs/2607.11343}
+doi={https://doi.org/10.1007/978-3-032-38470-6_50}
 }
 ```
